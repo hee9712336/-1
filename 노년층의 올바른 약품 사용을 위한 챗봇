@@ -1,0 +1,71 @@
+!pip install openai
+
+!pip install streamlit
+
+!pip install openai streamlit
+
+import openai
+import streamlit as st
+
+st.title("약품설명서 요약 챗봇")
+
+openai.api_key = '%2FGmsapNaT%2BADxMarckHVYKwaU6zYPnzdeqZretnxw%2F9iMHXFwSs9GhpWMKNOcrs6M95Su2JAGMzObipOx5%2FOIw%3D%3D'
+
+def summarize_text(text):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=f"다음 텍스트를 요약해 주세요: {text}",
+        max_tokens=150
+    )
+    summary = response.choices[0].text.strip()
+    return summary
+
+text = st.text_area("약품설명서를 입력하세요:")
+if st.button("요약하기"):
+    summary = summarize_text(text)
+    st.write("요약 결과:")
+    st.write(summary)
+
+
+import openai
+import streamlit as st
+
+
+openai.api_key =  '%2FGmsapNaT%2BADxMarckHVYKwaU6zYPnzdeqZretnxw%2F9iMHXFwSs9GhpWMKNOcrs6M95Su2JAGMzObipOx5%2FOIw%3D%3D'
+
+system_message = '''
+너의 이름은 요약봇이야.
+너는 항상 존댓말을 하는 챗봇이야.
+영어로 질문을 받아도 무조건 한글로 답변해줘.
+한글이 아닌 답변일 때는 다시 생각해서 꼭 한글로 만들어줘
+'''
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+if len(st.session_state.messages) == 0:
+    st.session_state.messages.append({"role": "system", "content": system_message})
+
+
+for idx, message in enumerate(st.session_state.messages):
+    if idx > 0:
+        st.write(f"{message['role']}: {message['content']}")
+
+
+prompt = st.text_input("질문을 입력하세요:")
+if prompt:
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.write(f"user: {prompt}")
+
+    # OpenAI API 호출
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  
+        messages=[
+            {"role": m["role"], "content": m["content"]}
+            for m in st.session_state.messages
+        ]
+    )
+
+    assistant_message = response['choices'][0]['message']['content']
+    st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+    st.write(f"assistant: {assistant_message}")
